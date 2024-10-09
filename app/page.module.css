@@ -19,11 +19,11 @@
 .sidebar {
     grid-area: sidebar;
     background-color: lightblue;
-
 }
 
 .main {
     grid-area: main;
+    overflow: scroll;
 }
 
 .footer {

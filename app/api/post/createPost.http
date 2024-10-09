@@ -1,0 +1,32 @@
+### GET request to example server
+GET http://localhost:3000/api/post
+
+###
+POST http://localhost:3000/api/post
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "id": 3,
+  "title": "title_3",
+  "body": "body_3"
+}
+
+###
+PUT http://localhost:3000/api/post
+Content-Type: application/json
+
+{
+"userId": 1,
+"id": 2,
+"title": "title_2_modified",
+"body": "body_2_modified"
+}
+
+###
+PATCH http://localhost:3000/api/post/3
+Content-Type: application/json
+
+{
+  "title": "title_3_patched"
+}

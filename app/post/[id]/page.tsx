@@ -1,22 +1,20 @@
 import { notFound } from "next/navigation";
+import { PostType } from "@/app/post/type/PostType";
+import { PostItem } from "@/app/post/component/PostItem";
 
 type PostIdProps = { params: { id: string } };
-type Post = {
-  id: string;
-  title: string;
-  content: string;
-};
-async function getPost(id: string): Promise<Post> {
-  // Simulate a 5-second delay
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        id,
-        title: "My First Post",
-        content: "This is the content of my first post. It's very exciting!",
-      });
-    }, 5000);
-  });
+
+async function getPost(id: string): Promise<PostType> {
+  console.log(`fetched posts ${id}`);
+  return fetch(`http://localhost:3000/api/post/${id}`)
+    .then((resp) => {
+      if (!resp.ok) {
+        notFound();
+      }
+      return resp;
+    })
+    .then((response) => response.json())
+    .then((posts) => posts as PostType);
 }
 
 export default async function PostID({
@@ -29,7 +27,7 @@ export default async function PostID({
     throw new Error("aaaaargh");
   }
 
-  const { content, id: id1, title } = await getPost(id);
+  const post = await getPost(id);
 
   return (
     <div>
@@ -40,10 +38,7 @@ export default async function PostID({
         </div>
         <div>{Math.random()}</div>
       </div>
-      Post ID
-      <div>{id1}</div>
-      <div>{title}</div>
-      <div>{content}</div>
+      <PostItem post={post} />
     </div>
   );
 }
