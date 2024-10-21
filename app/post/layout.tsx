@@ -8,7 +8,7 @@ export default function RootLayout({
       <div style={{ backgroundColor: "pink", height: "50px" }}>
         Another header here
       </div>
-      <div>{children}</div>
+      <div style={{ maxWidth: "fit-content" }}>{children}</div>
     </div>
   );
 }

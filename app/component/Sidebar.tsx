@@ -16,6 +16,9 @@ export function Sidebar() {
             </li>
           </ul>
         </li>
+        <li>
+          <Link href={"/post/create"}>Create new post</Link>
+        </li>
       </ul>
     </div>
   );

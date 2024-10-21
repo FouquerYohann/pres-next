@@ -21,7 +21,13 @@ export async function POST(request: Request) {
     );
   }
 
-  posts = [...posts, safeParse.data];
+  posts = [
+    ...posts,
+    {
+      ...safeParse.data,
+      id: safeParse.data.id ?? Math.floor(Math.random() * 10000),
+    },
+  ];
   writeToFile(posts);
   return NextResponse.json(
     { message: "post created successfully" },

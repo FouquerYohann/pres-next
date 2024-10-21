@@ -1,5 +1,6 @@
 import { PostType } from "@/app/post/type/PostType";
 import { PostItem } from "@/app/post/component/PostItem";
+import { Stack } from "@mui/material";
 
 const getPosts = async () => {
   console.log("fetched posts");
@@ -13,11 +14,11 @@ export default async function Post() {
   return (
     <div>
       <h2>Post</h2>
-      <div>
+      <Stack gap={4}>
         {posts.map((post) => (
-          <PostItem key={post.id} post={post} />
+          <PostItem key={post.id} post={post} showLinkButton />
         ))}
-      </div>
+      </Stack>
     </div>
   );
 }
