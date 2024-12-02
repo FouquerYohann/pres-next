@@ -1,17 +1,22 @@
 import { NextResponse } from "next/server";
-import { readFromFile, writeToFile } from "@/app/api/post/readWrite";
 import { postSchema } from "@/app/post/type/PostType";
+import { prisma } from "@/app/lib/prismaClient";
 
 type Slug = { params: { id: string } };
 
-export async function GET(request: Request, { params }: Slug) {
-  const postTypes = readFromFile();
-
-  const postFound = postTypes.find((post) => post.id === parseInt(params.id));
-
-  return postFound
-    ? NextResponse.json(postFound)
-    : NextResponse.json({ message: "post not found" }, { status: 404 });
+export async function GET(_request: Request, { params }: Slug) {
+  console.log(`fetch post ${params.id}`);
+  try {
+    const post = await prisma.post.findUnique({
+      where: { id: Number(params.id) },
+      include: { user: true },
+    });
+    return post
+      ? NextResponse.json(post)
+      : NextResponse.json({ message: "post not found" }, { status: 404 });
+  } catch (_unused) {
+    return NextResponse.json({ message: "post not found" }, { status: 404 });
+  }
 }
 
 export async function PATCH(request: Request, { params }: Slug) {
@@ -26,12 +31,16 @@ export async function PATCH(request: Request, { params }: Slug) {
     );
   }
 
-  const partialPost = safeParse.data;
-  const postTypes = readFromFile();
-  const updatedPost = postTypes.map((post) =>
-    post.id === parseInt(params.id) ? { ...post, ...partialPost } : post,
-  );
+  try {
+    const post = await prisma.post.update({
+      where: { id: Number(params.id) },
+      data: { body: safeParse.data.body, title: safeParse.data.title },
+    });
 
-  writeToFile(updatedPost);
-  return NextResponse.json("ok");
+    return post
+      ? NextResponse.json("ok")
+      : NextResponse.json({ message: "post not found" }, { status: 404 });
+  } catch (_unused) {
+    return NextResponse.json({ message: "Internal Error" }, { status: 500 });
+  }
 }

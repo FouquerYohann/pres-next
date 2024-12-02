@@ -1,18 +1,22 @@
 import { postSchema } from "@/app/post/type/PostType";
 import { NextResponse } from "next/server";
-import { readFromFile, writeToFile } from "@/app/api/post/readWrite";
+import { prisma } from "@/app/lib/prismaClient";
+import { PostCreateInputSchema } from "@/prisma/generated/zod";
 
 export async function GET() {
-  const posts = readFromFile();
-  return Response.json(posts);
+  const newVar = await prisma.post.findMany();
+  if (!newVar) {
+    return Response.json([]);
+  }
+  return Response.json(newVar);
 }
 
 export async function POST(request: Request) {
-  let posts = readFromFile();
-
   const body = await request.json();
-  const safeParse = postSchema.safeParse(body);
-  if (!safeParse.success) {
+
+  const { data, error } = PostCreateInputSchema.safeParse(body);
+  if (error) {
+    console.log(error.message);
     return NextResponse.json(
       {
         message: "Request body could not be read properly.",
@@ -20,24 +24,20 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-
-  posts = [
-    ...posts,
-    {
-      ...safeParse.data,
-      id: safeParse.data.id ?? Math.floor(Math.random() * 10000),
-    },
-  ];
-  writeToFile(posts);
-  return NextResponse.json(
-    { message: "post created successfully" },
-    { status: 201 },
-  );
+  try {
+    await prisma.post.create({
+      data,
+    });
+    return NextResponse.json(
+      { message: "post created successfully" },
+      { status: 201 },
+    );
+  } catch (_unused) {
+    return NextResponse.json({ message: "Internal Error" }, { status: 500 });
+  }
 }
 
 export async function PUT(request: Request) {
-  let posts = readFromFile();
-
   const body = await request.json();
   const safeParse = postSchema.safeParse(body);
   if (!safeParse.success) {
@@ -50,16 +50,13 @@ export async function PUT(request: Request) {
   }
   const newPost = safeParse.data;
 
-  if (!posts.find((post) => post.id === newPost.id)) {
-    return NextResponse.json(
-      {
-        message: "post not found",
-      },
-      { status: 404 },
-    );
+  try {
+    await prisma.post.update({
+      where: { id: newPost.id },
+      data: { title: newPost.title, body: newPost.body },
+    });
+    return NextResponse.json({ message: "post updated" }, { status: 200 });
+  } catch (_unused) {
+    return NextResponse.json({ message: "Internal Error" }, { status: 500 });
   }
-
-  posts = posts.map((post) => (post.id === newPost.id ? newPost : post));
-  writeToFile(posts);
-  return NextResponse.json({ message: "post updated" }, { status: 200 });
 }

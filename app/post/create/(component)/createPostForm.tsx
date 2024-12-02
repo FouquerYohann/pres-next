@@ -1,31 +1,45 @@
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 import { Button, CircularProgress, Stack, TextField } from "@mui/material";
-import { postSchema, PostType } from "@/app/post/type/PostType";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Loading from "@/app/post/[id]/loading";
+import { PostCreateInputSchema } from "@/prisma/generated/zod";
+import { Prisma } from "@prisma/client";
+import { PostWithUser } from "@/app/post/type/PostType";
 
-const emptyPost: PostType = {
+const emptyPost: Prisma.PostCreateInput = {
   title: "",
   body: "",
-  userId: -1,
+  user: {
+    connect: { id: 1 },
+  },
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const otherTypeOfCreate: Prisma.PostCreateInput = {
+  title: "",
+  body: "",
+  user: {
+    create: { email: "newuser@example.com", name: "New User" },
+  },
 };
 
 // use to show init async of form todo replace with our fetch
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const fetchData = async (): Promise<PostType> => {
+const fetchData = async (): Promise<PostWithUser> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
+        id: 1,
+        userId: 1,
         title: "My First Post",
         body: "This is the content of my first post. It's very exciting!",
-        userId: 1,
+        user: { email: "coucou@stra.com", name: "yoyo", id: 1 },
       });
     }, 5000);
   });
 };
 
-const createNewPost = async (post: PostType) => {
+const createNewPost = async (post: Prisma.PostCreateInput) => {
   return fetch("http://localhost:3000/api/post", {
     method: "POST",
     body: JSON.stringify(post),
@@ -38,8 +52,8 @@ export const CreatePostForm = () => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<PostType>({
-    resolver: zodResolver(postSchema),
+  } = useForm<Prisma.PostCreateInput>({
+    resolver: zodResolver(PostCreateInputSchema),
     defaultValues: emptyPost,
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -60,21 +74,6 @@ export const CreatePostForm = () => {
   return (
     <form onSubmit={onSubmit}>
       <Stack p={3} gap={3}>
-        <Controller
-          control={control}
-          name={"userId"}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              inputMode={"numeric"}
-              required
-              label={field.name}
-              error={!!errors.userId}
-              helperText={errors.userId?.message ?? ""}
-            />
-          )}
-        />
-
         <Controller
           control={control}
           name={"title"}

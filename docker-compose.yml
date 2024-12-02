@@ -1,0 +1,35 @@
+services:
+  web-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:3000"
+    environment:
+      - DATABASE_URL=postgresql://mardi:mardiaussi@my-database:5432/mardiencore
+    depends_on:
+      - my-database
+
+  my-database:
+    restart: always
+    image: postgres
+    environment:
+      POSTGRES_USER: mardi
+      POSTGRES_PASSWORD: mardiaussi
+      POSTGRES_DB: mardiencore
+    ports:
+      - "5000:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  migrate:
+    build: .
+    command: [ "sh", "-c", "npx prisma migrate deploy" ]
+    environment:
+      - DATABASE_URL=postgresql://mardi:mardiaussi@my-database:5432/mardiencore
+    depends_on:
+      - db
+      - web
+
+volumes:
+  postgres_data:

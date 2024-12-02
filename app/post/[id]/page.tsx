@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
-import { PostType } from "@/app/post/type/PostType";
 import { PostItem } from "@/app/post/component/PostItem";
+import { PostWithUser } from "@/app/post/type/PostType";
 
 type PostIdProps = { params: { id: string } };
+export const dynamic = "force-dynamic";
 
-async function getPost(id: string): Promise<PostType> {
-  console.log(`fetched posts ${id}`);
-  return fetch(`http://localhost:3000/api/post/${id}`)
+async function getPost(id: string): Promise<PostWithUser> {
+  return fetch(`http://localhost:3000/api/post/${id}`, { cache: "no-cache" })
     .then((resp) => {
       if (!resp.ok) {
         notFound();
@@ -14,7 +14,10 @@ async function getPost(id: string): Promise<PostType> {
       return resp;
     })
     .then((response) => response.json())
-    .then((posts) => posts as PostType);
+    .then((posts) => {
+      console.log(posts);
+      return posts as PostWithUser;
+    });
 }
 
 export default async function PostID({
@@ -31,13 +34,6 @@ export default async function PostID({
 
   return (
     <div>
-      <div>
-        <div>
-          Note that this page is no cached and rerendered because of the dynamic
-          route
-        </div>
-        <div>{Math.random()}</div>
-      </div>
       <PostItem post={post} />
     </div>
   );

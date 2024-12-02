@@ -1,22 +1,24 @@
-import { PostType } from "@/app/post/type/PostType";
+import { PostWithUser } from "@/app/post/type/PostType";
 import { FC } from "react";
 import { Button, Stack, Typography } from "@mui/material";
-import Link from "next/link";
 
-export const PostItem: FC<{ post: PostType; showLinkButton?: boolean }> = ({
-  post: { id, title, body },
-  showLinkButton,
-}) => {
+export const PostItem: FC<{
+  post: PostWithUser;
+  showLinkButton?: boolean;
+}> = ({ post: { id, title, body, user }, showLinkButton }) => {
   return (
     <Stack direction={"row"} gap={5} alignContent={"center"}>
       <Stack gap={1}>
+        {user && (
+          <Typography variant={"h4"}>{`made by ${user.name}`}</Typography>
+        )}
         <Typography variant={"h5"}>{title}</Typography>
         <Typography variant={"body2"}>{body}</Typography>
       </Stack>
       {showLinkButton && (
-        <Link href={`/post/${id}`} passHref>
+        <a href={`/post/${id}`}>
           <Button variant={"outlined"}>Go To</Button>
-        </Link>
+        </a>
       )}
     </Stack>
   );
